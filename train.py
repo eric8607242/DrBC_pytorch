@@ -9,9 +9,8 @@ import torch.nn.functional as F
 from torch_geometric.utils import from_networkx
 
 from utils.model import DrBC
-
 def generate_graph():
-    n = 200
+    n = 20
     g = nx.powerlaw_cluster_graph(n=n, m=4, p=0.05)
 
     degree = g.degree([i for i in range(n)])
@@ -38,7 +37,6 @@ def get_batch_pair(gt, outs):
     node_nums = gt.shape[0]
 
     node_combine = list(combinations([i for i in range(node_nums)], 2))
-    node_combine = node_combine*5
     random.shuffle(node_combine)
 
     node_pairs = torch.zeros((len(node_combine), 2))
@@ -56,22 +54,25 @@ def train():
     model = model.cuda()
     optimizer = Adam(params=model.parameters(), lr=0.001)
 
-    for e in range(10):
-        degree, bc, edge_index = generate_graph()
-        x, y = get_data(degree, bc)
-        x = x.cuda()
-        y = y.cuda()
-
-        outs = model(x, edge_index)
-        node_pairs = get_batch_pair(y, outs)
+    #for e in range(1000):
+    degree, bc, edge_index = generate_graph()
+    x, y = get_data(degree, bc)
+    x = x.cuda()
+    y = y.cuda()
+    edge_index = edge_index.cuda()
+    for e in range(1000):
 
         batch_size = 16
-        iteration_nums = len(node_pairs) // batch_size
+        iteration_nums = len(x) // batch_size
         for i in range(iteration_nums):
+
+            outs = model(x, edge_index)
+            node_pairs = get_batch_pair(y, outs)
+
             data = node_pairs[i*batch_size:(i+1)*batch_size]
-            loss = F.binary_cross_entropy(torch.sigmoid(data[:, 1]), torch.sigmoid(data[:, 0].detach()))
-            print(loss)
-            loss.backward(retain_graph=True)
+            print(node_pairs[0])
+            loss = F.binary_cross_entropy(torch.sigmoid(data[:, 1]), torch.sigmoid(data[:, 0].detach()), reduction="sum")
+            loss.backward()
             optimizer.step()
 
 
