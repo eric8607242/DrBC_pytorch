@@ -44,6 +44,7 @@ class Encoder(nn.Module):
     def __init__(self, input_dim=3, layer_nums=5, embedding_dim=4):
         super(Encoder, self).__init__()
         self.first = nn.Linear(input_dim, embedding_dim)
+        self.relu = nn.LeakyReLU()
         self.layers = nn.ModuleList()
         for l in range(layer_nums):
             self.layers.append(Encoder_Block(embedding_dim))
@@ -51,6 +52,7 @@ class Encoder(nn.Module):
     def forward(self, x, edge_index):
         outs = []
         x = self.first(x)
+        x = self.relu(x)
         for l in self.layers:
             x = l(x, edge_index)
             outs.append(x)

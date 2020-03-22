@@ -37,21 +37,26 @@ class GraphData:
         return train_data
 
 
-
     def get_edge_index(self):
         id_nums = 0
-        edge_index = []
+        edge_index = [[], []]
         for graph in self.graph_list:
             node_nums = len(graph.nodes)
-            edge_index.extend([[v1+id_nums, v2+id_nums] for v1, v2 in graph.edges])
+            first_edge = [v1+id_nums for v1, v2 in graph.edges]
+            second_edge = [v2+id_nums for v1, v2 in graph.edges]
+
+            edge_index[0].extend(first_edge)
+            edge_index[1].extend(second_edge)
 
             id_nums += node_nums
 
         return edge_index
 
     def get_label(self):
-        bc_list = [nx.betweenness_centrality(graph) for graph in self.graph_list]
-        labels = [bc.values for bc in bc_list]
+        bc_list = [list(nx.betweenness_centrality(graph, normalized=False).values()) for graph in self.graph_list]
+        labels = []
+        for bc in bc_list:
+            labels.extend(bc)
 
         return labels
 
@@ -80,12 +85,3 @@ class GraphData:
 
 
             
-                    
-
-
-
-
-g = GraphData(batch_size=2)
-g.get_node_degree()
-g.get_source_target_pairs()
-g.get_edge_index()

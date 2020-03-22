@@ -14,7 +14,7 @@ from utils.dataflow import GraphData
 BATCH_SIZE = 16
 
 def wrap_data(data, dtype=None, cuda=True):
-    data = torch.tensor(data) if dtype is None else torch.tensor(data, dtype=dtype)
+    data = torch.Tensor(data) if dtype is None else torch.tensor(data, dtype=dtype)
     data = data.cuda() if cuda else data
     return data
 
@@ -29,18 +29,18 @@ def calculate_loss(outs, label, source_ids, target_ids):
 def train():
     model = DrBC()
     model = model.cuda()
-    optimizer = Adam(params=model.parameters(), lr=0.001)
+    optimizer = Adam(params=model.parameters(), lr=0.0001)
 
-    for iteration in range(5000):
+    for iteration in range(10000):
         if iteration % 500 == 0:
             g = GraphData()
 
             edge_index = g.get_edge_index()
 
-            train_data = self.get_train_data()
+            train_data = g.get_train_data()
             label = g.get_label()
 
-            edge_index = wrap_data(edge_index)
+            edge_index = wrap_data(edge_index, dtype=torch.long)
             train_data = wrap_data(train_data)
             label = wrap_data(label)
 
@@ -49,7 +49,7 @@ def train():
         outs = model(train_data, edge_index)
         loss = calculate_loss(outs, label, source_ids, target_ids)
 
-        print(loss)
+        print(loss.item())
         loss.backward()
         optimizer.step()
 
