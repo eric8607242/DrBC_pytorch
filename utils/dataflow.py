@@ -27,7 +27,6 @@ class GraphData:
         for degree in degree_list:
             degree_value.extend([v for _, v in degree])
 
-
         return degree_value
 
     def get_train_data(self):
@@ -35,7 +34,6 @@ class GraphData:
         train_data = [[deg, 1, 1] for deg in degree_value]
         
         return train_data
-
 
     def get_edge_index(self):
         id_nums = 0
@@ -85,3 +83,49 @@ class GraphData:
 
 
             
+class TestData:
+    def __init__(self, score_file, graph_file):
+        self.label = self._read_file(score_file)
+        self.edge_index = self._read_file(graph_file)
+
+    def _read_file(self, file_path):
+        fp = open(file_path, "r")
+
+        data = []
+        line = fp.readline()
+        while line:
+            line_txt = line[:-1].split("\t")
+            data.append([float(t) for t in line_txt])
+            line = fp.readline()
+
+        fp.close()
+        return data
+
+    def _get_node_degree(self):
+        degree_value = [0 for i in range(len(self.label))]
+
+        for e in self.edge_index:
+            degree_value[int(e[0])] += 1
+        return degree_value
+    
+    def get_label(self):
+        label = [bc[1] for bc in self.label]
+        return label
+
+    def get_edge_index(self):
+        edge_index = [[], []]
+
+        edge_index[0] = [int(e[0]) for e in self.edge_index]
+        edge_index[1] = [int(e[1]) for e in self.edge_index]
+
+        return edge_index
+
+    def get_train_data(self):
+        degree_value = self._get_node_degree()
+        train_data = [[deg, 1, 1] for deg in degree_value]
+        
+        return train_data
+
+if __name__ == "__main__":
+    td = TestData("../hw1_data/Synthetic/5000/0_score.txt", "../hw1_data/Synthetic/5000/0.txt")
+    print(td.get_edge_index())
