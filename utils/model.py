@@ -68,6 +68,7 @@ class Decoder(nn.Module):
                                     nn.Linear(hidden_dim, 1))
     def forward(self, x):
         x = self.layers(x)
+        #x = torch.sigmoid(x)
         return x
             
 

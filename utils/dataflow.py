@@ -1,3 +1,4 @@
+import math
 import random
 
 import numpy as np
@@ -46,21 +47,23 @@ class GraphData:
             edge_index[0].extend(first_edge)
             edge_index[1].extend(second_edge)
 
-            id_nums += node_nums
+            if bidirect:
+                edge_index[1].extend(first_edge)
+                edge_index[0].extend(second_edge)
 
-        if bidirect:
-            edge_index[0].append(edge_index[1])
-            edge_index[1].append(edge_index[0])
+            id_nums += node_nums
 
         return edge_index
 
     def get_label(self):
-        bc_list = [list(nx.betweenness_centrality(graph, normalized=False).values()) for graph in self.graph_list]
+        bc_list = [list(nx.betweenness_centrality(graph).values()) for graph in self.graph_list]
         labels = []
         for bc in bc_list:
             labels.extend(bc)
 
-        return labels
+        log_labels = [-math.log(v+1e-8) for v in labels] 
+
+        return log_labels
 
     def get_source_target_pairs(self, repeat=5):
         id_nums = 0
@@ -113,8 +116,10 @@ class TestData:
         return degree_value
     
     def get_label(self):
-        label = [bc[1] for bc in self.label]
-        return label
+        labels = [bc[1] for bc in self.label]
+        log_labels = [-math.log(v+1e-8) for v in labels] 
+
+        return log_labels
 
     def get_edge_index(self, bidirect=True):
         edge_index = [[], []]
@@ -123,8 +128,8 @@ class TestData:
         edge_index[1] = [int(e[1]) for e in self.edge_index]
 
         if bidirect:
-            edge_index[0].append(edge_index[1])
-            edge_index[1].append(edge_index[0])
+            edge_index[0].extend([int(e[1]) for e in self.edge_index])
+            edge_index[1].extend([int(e[0]) for e in self.edge_index])
 
         return edge_index
 
