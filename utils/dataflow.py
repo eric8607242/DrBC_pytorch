@@ -35,7 +35,7 @@ class GraphData:
         
         return train_data
 
-    def get_edge_index(self):
+    def get_edge_index(self, bidirect=True):
         id_nums = 0
         edge_index = [[], []]
         for graph in self.graph_list:
@@ -47,6 +47,10 @@ class GraphData:
             edge_index[1].extend(second_edge)
 
             id_nums += node_nums
+
+        if bidirect:
+            edge_index[0].append(edge_index[1])
+            edge_index[1].append(edge_index[0])
 
         return edge_index
 
@@ -112,11 +116,15 @@ class TestData:
         label = [bc[1] for bc in self.label]
         return label
 
-    def get_edge_index(self):
+    def get_edge_index(self, bidirect=True):
         edge_index = [[], []]
 
         edge_index[0] = [int(e[0]) for e in self.edge_index]
         edge_index[1] = [int(e[1]) for e in self.edge_index]
+
+        if bidirect:
+            edge_index[0].append(edge_index[1])
+            edge_index[1].append(edge_index[0])
 
         return edge_index
 
