@@ -12,11 +12,13 @@ MODEL_PATH = "./model.pth"
 
 def test(score_path, data_path):
     model = DrBC()
+    model.cuda()
 
     load(model, MODEL_PATH)
+    model = model.cpu()
 
     test_graph = TestData(score_path, data_path)
-    val(model, test_graph)
+    val(model, test_graph, cuda=False)
 
 
 if __name__ == "__main__":

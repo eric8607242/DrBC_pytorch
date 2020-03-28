@@ -101,7 +101,8 @@ class TestData:
         data = []
         line = fp.readline()
         while line:
-            line_txt = line[:-1].split("\t")
+            line = line.replace(":", "")
+            line_txt = line[:-1].split("\t") if "\t" in line else line[:-1].split(" ")
             data.append([float(t) for t in line_txt])
             line = fp.readline()
 

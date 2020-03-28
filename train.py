@@ -6,7 +6,6 @@ import networkx as nx
 
 import torch
 from torch.optim import Adam
-import torch.nn.functional as F
 from torch_geometric.utils import from_networkx
 
 import scipy.stats as stats
@@ -31,18 +30,19 @@ def train(score_path, data_path):
             print("-----------------Val---------------------")
             val(model, val_graph)
 
-            print("-----------------Train---------------------")
             print("Graph Generate")
             graph = GraphData()
 
-            edge_index = graph .get_edge_index()
-            train_data = graph .get_train_data()
+            print("-----------------Train---------------------")
+            edge_index = graph.get_edge_index()
+            train_data = graph.get_train_data()
             label = graph.get_label()
 
             edge_index = wrap_data(edge_index, dtype=torch.long)
             train_data = wrap_data(train_data)
             label = wrap_data(label)
             label = label.view(-1, 1)
+        model.train()
 
         source_ids, target_ids = graph.get_source_target_pairs()
 
@@ -61,16 +61,19 @@ def train(score_path, data_path):
     test_graph = TestData(score_path, data_path)
     val(model, test_graph)
 
-def val(model, graph):
+def val(model, graph, cuda=True):
+    model.eval()
     edge_index = graph.get_edge_index()
     X = graph.get_train_data()
     label = graph.get_label()
 
-    edge_index = wrap_data(edge_index, dtype=torch.long)
-    X = wrap_data(X)
-    label = wrap_data(label)
     
-    outs = model(X, edge_index)
+    edge_index = wrap_data(edge_index, dtype=torch.long, cuda=cuda)
+    X = wrap_data(X, cuda=cuda)
+    label = wrap_data(label, cuda=False)
+    
+    with torch.no_grad():
+        outs = model(X, edge_index)
 
     calculate_metric(outs, label)
 

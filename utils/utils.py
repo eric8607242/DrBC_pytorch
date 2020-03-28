@@ -1,10 +1,16 @@
+import torch
+import torch.nn.functional as F
+
+import scipy.stats as stats
+
 def calculate_metric(outs, label):
     topk = [1, 5, 10]
     k_accuracy = []
     node_nums = len(outs)
 
     label = label.reshape(-1)
-    tau, _ = stats.kendalltau(outs, label)
+    outs = outs.reshape(-1)
+    tau, _ = stats.kendalltau(outs.cpu().detach().numpy(), label.cpu().detach().numpy())
 
     print("Kendall tau: {}".format(tau))
 
@@ -17,8 +23,9 @@ def calculate_metric(outs, label):
         k_outs = outs[:k_num].tolist()
 
         correct = list(set(k_label) & set(k_outs))
-        k_accuracy.append(len(correct)/(k_num))
-        print("Top-{} accuracy: {}".format(k, k_accuracy*100))
+        accuracy = len(correct)/(k_num)
+        k_accuracy.append(accuracy)
+        print("Top-{} accuracy: {}".format(k, accuracy*100))
 
     return k_accuracy
 
@@ -38,7 +45,7 @@ def load(model, load_path):
     state_dict = torch.load(load_path)
     model_dict = model.state_dict()
 
-    state_dict = {K:v for k, v in state_dict.items() if k in model_dict}
+    state_dict = {k:v for k, v in state_dict.items() if k in model_dict}
     model_dict.update(state_dict)
 
     model.load_state_dict(model_dict)
